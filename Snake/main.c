@@ -90,7 +90,7 @@ char** initGame() {
 	return board;
 }
 
-struct Snake* InitSnake(char** board) {
+struct Snake* initSnake(char** board) {
 
 	struct Node* node = (struct Node*)malloc(sizeof(struct Node));
 	if (!node) {
@@ -98,7 +98,6 @@ struct Snake* InitSnake(char** board) {
 	}
 	node->x = height / 2;
 	node->y = width / 2; 
-	//node->placeinBoard = &(board[][]);
 	node->next = NULL;
 
 
@@ -221,7 +220,7 @@ bool game() {
 		return -1;
 	}
 
-	struct Snake* snake = InitSnake(board);
+	struct Snake* snake = initSnake(board);
 	if (!snake) {
 		printf("init snake failed\n");
 		return -1;
