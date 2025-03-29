@@ -5,6 +5,9 @@
 #include <time.h>
 #include <stdbool.h> 
 
+#include <conio.h>
+#include <windows.h>
+
 unsigned int width = 0;
 unsigned int height = 0;
 
@@ -162,7 +165,7 @@ bool isEatStar(struct Snake* snake, char** board) {
 	return false;
 }
 
-void setSnakeOnBoard(struct Snake* snake, char** board, bool isEat, struct Node* lastHead) {
+void setSnakeOnBoard(struct Snake* snake, char** board, bool isEat) {
 	if ((snake->head != NULL)
 		&& (snake->head->x < height) 
 		&& (snake->head->y < width)) {
@@ -181,10 +184,15 @@ bool step(char** board, char direction, struct Snake* snake) {
 	char prevHead = (snake->len == 1) ? ' ' : 'O';
 	board[snake->head->x][snake->head->y] = prevHead;
 	struct Node* prevTail = snake->tail;
+	//here
+
 	if (snake->tail->next != NULL) {
 		snake->tail = snake->tail->next;
 	}
-	board[prevTail->x][prevTail->y] = ' ';
+	int xLastTail = prevTail->x;
+	int yLastTail = prevTail->y;
+
+
 
 	prevTail->next = NULL;
 	prevTail->x = snake->head->x;
@@ -207,6 +215,21 @@ bool step(char** board, char direction, struct Snake* snake) {
 	snake->head->next = prevTail;
 	snake->head = prevTail;
 	bool isEat = (isEatStar(snake, board)) ? true : false;
+	board[xLastTail][yLastTail] = (isEat) ? 'O' : ' ';
+
+	struct Node* lastTail = NULL;
+	if (isEat) {
+		lastTail = malloc(sizeof(Node));
+		lastTail->x = xLastTail;
+		lastTail->y = yLastTail;
+		lastTail->next = snake->tail;
+		snake->tail = lastTail;
+
+		//snake->head->next = lastTail;
+		//snake->head = lastHead;
+		snake->len += 1;
+
+	}
 
 	return isEat;
 
@@ -240,23 +263,33 @@ bool game() {
 	printScreen(board);
 	bool isEat = false;
 	board[height / 2 + 2][width / 2] = '*';
+	char dir = 'D';
 	while (statusGame(snake, board)) {
-		char dir = 'L';
+		printf("Tick... Last input: %c\n", dir);
+		Sleep(3000);
 
-		struct Node* lastHead = NULL;
-		if (isEat) {
-			lastHead = malloc(sizeof(Node));
-			lastHead->x = snake->head->x;
-			lastHead->y = snake->head->y;
-			snake->head->next = lastHead;
-			snake->head = lastHead;
-			snake->len += 1;
-
+		if (_kbhit()) {
+			dir = _getch();
 		}
+
+
+		//struct Node* lastTail = NULL;
+		//if (isEat) {
+		//	lastTail = malloc(sizeof(Node));
+		//	lastTail->x = snake->tail->x;
+		//	lastTail->y = snake->tail->y;
+		//	lastTail->next = snake->tail;
+		//	snake->tail = lastTail;
+
+		//	//snake->head->next = lastTail;
+		//	//snake->head = lastHead;
+		//	snake->len += 1;
+
+		//}
 		setStar(board);
 
 		isEat = step(board, dir, snake);
-		setSnakeOnBoard(snake, board, isEat, lastHead);
+		setSnakeOnBoard(snake, board, isEat);
 
 		printScreen(board);
 		printf("%d\n", statusGame(snake, board));
@@ -267,6 +300,23 @@ bool game() {
 
 int main()
 {
+
+
+	
+	//char lastInput = ' ';
+	//while (1) {
+
+
+	//	if (_kbhit()) {
+	//		lastInput = _getch();
+	//	}
+
+	//Sleep(1000); // Wait 1 second
+	//}
+
+	//return 0;
+	
+
 	/*int x = -1;
 	unsigned int y = 2;
 	if (x < y + 3) {
