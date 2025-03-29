@@ -163,7 +163,9 @@ bool isEatStar(struct Snake* snake, char** board) {
 }
 
 void setSnakeOnBoard(struct Snake* snake, char** board, bool isEat, struct Node* lastHead) {
-	if ((snake->head->x != NULL) && (snake->head->y != NULL) && (snake->head->x < height) && (snake->head->y < width)) {
+	if ((snake->head != NULL)
+		&& (snake->head->x < height) 
+		&& (snake->head->y < width)) {
 		board[snake->head->x][snake->head->y] = 'Q';
 	}
 	//if (isEat && lastHead != NULL) {
@@ -182,23 +184,26 @@ bool step(char** board, char direction, struct Snake* snake) {
 	if (snake->tail->next != NULL) {
 		snake->tail = snake->tail->next;
 	}
+	board[prevTail->x][prevTail->y] = ' ';
+
 	prevTail->next = NULL;
 	prevTail->x = snake->head->x;
 	prevTail->y = snake->head->y;
 
-	if (direction == 'R') {
+	if (direction == 'D') {
 		prevTail->x += 1;
 		//snake->head->x 
 	}
-	else if (direction == 'L') {
+	else if (direction == 'U') {
 		prevTail->x -= 1;
 	}
-	else if (direction == 'D') {
+	else if (direction == 'R') {
 		prevTail->y += 1;
 	}
-	else if (direction == 'U') {
+	else if (direction == 'L') {
 		prevTail->y -= 1;
 	}
+
 	snake->head->next = prevTail;
 	snake->head = prevTail;
 	bool isEat = (isEatStar(snake, board)) ? true : false;
@@ -236,7 +241,7 @@ bool game() {
 	bool isEat = false;
 	board[height / 2 + 2][width / 2] = '*';
 	while (statusGame(snake, board)) {
-		char dir = 'R';
+		char dir = 'L';
 
 		struct Node* lastHead = NULL;
 		if (isEat) {
@@ -262,6 +267,14 @@ bool game() {
 
 int main()
 {
+	/*int x = -1;
+	unsigned int y = 2;
+	if (x < y + 3) {
+		printf("yes\n");
+	}
+	else {
+		printf("no\n");
+	}*/
 	game();
 
 
