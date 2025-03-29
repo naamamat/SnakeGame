@@ -109,7 +109,7 @@ struct Snake* initSnake(char** board) {
 	}
 	snake->direction = 'D';
 	snake->head = node;
-	snake->tail = NULL;
+	snake->tail = node;
 	snake->len = 1;
 
 	return snake;
@@ -155,52 +155,14 @@ void setStar(char** board) {
 
 	board[x][realY] = '*';
 }
-bool isEatStar(struct Snake* snake, int** board) {
+bool isEatStar(struct Snake* snake, char** board) {
 	if (board[snake->head->x][snake->head->y] == '*') {
 		return true;
 	}
 	return false;
 }
 
-bool step(char** board, char direction, struct Snake* snake) {
-	char prevHead = (snake->len == 1) ? ' ' : 'O';
-	board[snake->head->x][snake->head->y] = prevHead;
-	if (snake->tail != NULL) {
-		snake->tail = snake->tail->next;
-	}
-
-	if (direction == 'R') {
-		snake->head->x += 1;
-	}
-	else if (direction == 'L') {
-		snake->head->x -= 1;
-	}
-	else if (direction == 'D') {
-		snake->head->y += 1;
-	}
-	else if (direction == 'U') {
-		snake->head->y -= 1;
-	}
-	bool isEat = (isEatStar(snake, board)) ? true : false;
-	
-
-
-	return isEat;
-
-}
-
-
-
-
-bool statusGame(struct Snake* snake, int** board) {
-	if (snake->head->x >= height - 1 || snake->head->x <= 0 || snake->head->y >= width - 1 || snake->head->y <= 0) {
-		return false;
-	}
-	return true;
-}
-
-
-void setSnakeOnBoard(struct Snake* snake, int** board, bool isEat, struct Node* lastHead) {
+void setSnakeOnBoard(struct Snake* snake, char** board, bool isEat, struct Node* lastHead) {
 	if ((snake->head->x != NULL) && (snake->head->y != NULL) && (snake->head->x < height) && (snake->head->y < width)) {
 		board[snake->head->x][snake->head->y] = 'Q';
 	}
@@ -212,6 +174,51 @@ void setSnakeOnBoard(struct Snake* snake, int** board, bool isEat, struct Node* 
 	//}
 
 }
+
+bool step(char** board, char direction, struct Snake* snake) {
+	char prevHead = (snake->len == 1) ? ' ' : 'O';
+	board[snake->head->x][snake->head->y] = prevHead;
+	struct Node* prevTail = snake->tail;
+	if (snake->tail->next != NULL) {
+		snake->tail = snake->tail->next;
+	}
+	prevTail->next = NULL;
+	prevTail->x = snake->head->x;
+	prevTail->y = snake->head->y;
+
+	if (direction == 'R') {
+		prevTail->x += 1;
+		//snake->head->x 
+	}
+	else if (direction == 'L') {
+		prevTail->x -= 1;
+	}
+	else if (direction == 'D') {
+		prevTail->y += 1;
+	}
+	else if (direction == 'U') {
+		prevTail->y -= 1;
+	}
+	snake->head->next = prevTail;
+	snake->head = prevTail;
+	bool isEat = (isEatStar(snake, board)) ? true : false;
+
+	return isEat;
+
+}
+
+
+
+
+bool statusGame(struct Snake* snake, char** board) {
+	if (snake->head->x >= height - 1 || snake->head->x <= 0 || snake->head->y >= width - 1 || snake->head->y <= 0) {
+		return false;
+	}
+	return true;
+}
+
+
+
 
 bool game() {
 	char** board = initGame();
@@ -227,6 +234,7 @@ bool game() {
 	}
 	printScreen(board);
 	bool isEat = false;
+	board[height / 2 + 2][width / 2] = '*';
 	while (statusGame(snake, board)) {
 		char dir = 'R';
 
@@ -237,6 +245,8 @@ bool game() {
 			lastHead->y = snake->head->y;
 			snake->head->next = lastHead;
 			snake->head = lastHead;
+			snake->len += 1;
+
 		}
 		setStar(board);
 
@@ -250,52 +260,10 @@ bool game() {
 
 
 
-
-//void setSnakePlace(int state, char direction)
-//{
-//	if (direction = 's') {
-//		return 
-//	}
-//}
 int main()
 {
 	game();
 
-
-
-
-	//printScreen(board);
-
-	//printScreen(board);
-
-	//step(board, 'R', snake);
-	//step(board, 'R', snake);
-	//printScreen(board);
-
-	//step(board, 'R', snake);
-	//printScreen(board);
-	//printf("%d\n", statusGame(snake, board));
-	//step(board, 'R', snake);
-	//setStar(board);
-	//printScreen(board);
-	//step(board, 'L', snake);
-	//step(board, 'L', snake);
-	//step(board, 'L', snake);
-	//step(board, 'L', snake);
-
-	//setStar(board);
-	//printScreen(board);
-
-	//step(board, 'D', snake);
-	//step(board, 'D', snake);
-	//step(board, 'D', snake);
-	//step(board, 'D', snake);
-	//step(board, 'D', snake);
-	//setStar(board);
-	//printScreen(board);
-	//step(board, 'U', snake);
-	//setStar(board);
-	//printScreen(board);
 
 
 	return 0;
