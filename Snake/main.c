@@ -160,7 +160,7 @@ void setStar(char** board) {
 		return;
 	}
 
-	printf("x = %d, y = %d, count av = %d\n", x, realY,countAvailable);
+	//printf("x = %d, y = %d, count av = %d\n", x, realY,countAvailable);
 
 	board[x][realY] = '*';
 }
@@ -269,6 +269,7 @@ bool game() {
 		printf("init snake failed\n");
 		return -1;
 	}
+	printf("\033[H\033[J");
 	printScreen(board);
 	bool collision = false;
 	board[height / 2 + 2][width / 2] = '*';
@@ -280,7 +281,7 @@ bool game() {
 		if (_kbhit()) {
 			dir = _getch();
 			dir = _getch();
-			printf("_getch: c: %c d: %d\n", dir, dir);
+			//printf("_getch: c: %c d: %d\n", dir, dir);
 
 			switch (dir) {
 			case KEY_UP:
@@ -305,7 +306,7 @@ bool game() {
 		collision = step(board, dir, snake);
 		//isEat = false;
 		setSnakeOnBoard(snake, board);
-
+		printf("\033[H\033[J");
 		printScreen(board);
 		printf("%d\n", (statusGame(snake, board) & !collision));
 	}
