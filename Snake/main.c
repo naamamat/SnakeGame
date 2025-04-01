@@ -8,8 +8,14 @@
 #include <conio.h>
 #include <windows.h>
 
+#define KEY_UP 72
+#define KEY_DOWN 80
+#define KEY_LEFT 75
+#define KEY_RIGHT 77
+
 unsigned int width = 0;
 unsigned int height = 0;
+
 
 struct Node {
 	//char* placeinBoard;
@@ -165,18 +171,19 @@ bool isEatStar(struct Snake* snake, char** board) {
 	return false;
 }
 
-void setSnakeOnBoard(struct Snake* snake, char** board, bool isEat) {
+bool isCollision(struct Snake* snake, char** board) {
+	if (board[snake->head->x][snake->head->y] == 'O') {
+		return true;
+	}
+	return false;
+}
+
+void setSnakeOnBoard(struct Snake* snake, char** board) {
 	if ((snake->head != NULL)
 		&& (snake->head->x < height) 
 		&& (snake->head->y < width)) {
 		board[snake->head->x][snake->head->y] = 'Q';
 	}
-	//if (isEat && lastHead != NULL) {
-	//	board[lastHead->x][lastHead->y] = 'O';
-	//}
-	//if (snake->tail != NULL) {
-	//	board[snake->tail->x][snake->tail->y] = ' ';
-	//}
 
 }
 
@@ -214,7 +221,9 @@ bool step(char** board, char direction, struct Snake* snake) {
 
 	snake->head->next = prevTail;
 	snake->head = prevTail;
+	snake->head->next = NULL;
 	bool isEat = (isEatStar(snake, board)) ? true : false;
+	bool isCol = isCollision(snake, board);
 	board[xLastTail][yLastTail] = (isEat) ? 'O' : ' ';
 
 	struct Node* lastTail = NULL;
@@ -231,7 +240,7 @@ bool step(char** board, char direction, struct Snake* snake) {
 
 	}
 
-	return isEat;
+	return isCol;
 
 }
 
@@ -261,70 +270,71 @@ bool game() {
 		return -1;
 	}
 	printScreen(board);
-	bool isEat = false;
+	bool collision = false;
 	board[height / 2 + 2][width / 2] = '*';
 	char dir = 'D';
-	while (statusGame(snake, board)) {
-		printf("Tick... Last input: %c\n", dir);
+	while (!collision && statusGame(snake, board)) {
+		printf("Last input: %c\n", dir);
 		Sleep(3000);
 
 		if (_kbhit()) {
 			dir = _getch();
+			dir = _getch();
+			printf("_getch: c: %c d: %d\n", dir, dir);
+
+			switch (dir) {
+			case KEY_UP:
+				dir = 'U';
+				break;
+			case KEY_DOWN:
+				dir = 'D';
+				break;
+			case KEY_LEFT:
+				dir = 'L';
+				break;
+			case KEY_RIGHT:
+				dir = 'R';
+				break;
+			default:
+				break;
+			}
+
 		}
-
-
-		//struct Node* lastTail = NULL;
-		//if (isEat) {
-		//	lastTail = malloc(sizeof(Node));
-		//	lastTail->x = snake->tail->x;
-		//	lastTail->y = snake->tail->y;
-		//	lastTail->next = snake->tail;
-		//	snake->tail = lastTail;
-
-		//	//snake->head->next = lastTail;
-		//	//snake->head = lastHead;
-		//	snake->len += 1;
-
-		//}
 		setStar(board);
 
-		isEat = step(board, dir, snake);
-		setSnakeOnBoard(snake, board, isEat);
+		collision = step(board, dir, snake);
+		//isEat = false;
+		setSnakeOnBoard(snake, board);
 
 		printScreen(board);
-		printf("%d\n", statusGame(snake, board));
+		printf("%d\n", (statusGame(snake, board) & !collision));
 	}
 }
 
+
+/*
+==============================================
+ Name        : SwapValues
+ Description : Swaps two integers using pointers
+==============================================
+*/
+#include <stdio.h>
+
+void swap(int* a, int* b) {
+	int temp = *a;
+	*a = *b;
+	*b = temp;
+}
 
 
 int main()
 {
 
-
+	//int x = 5, y = 10;
+	//printf("Before swap: x = %d, y = %d\n", x, y);
+	//swap(&x, &y);
+	//printf("Before swap: x = %d, y = %d\n", x, y);
 	
-	//char lastInput = ' ';
-	//while (1) {
-
-
-	//	if (_kbhit()) {
-	//		lastInput = _getch();
-	//	}
-
-	//Sleep(1000); // Wait 1 second
-	//}
-
-	//return 0;
-	
-
-	/*int x = -1;
-	unsigned int y = 2;
-	if (x < y + 3) {
-		printf("yes\n");
-	}
-	else {
-		printf("no\n");
-	}*/
 	game();
 
 
