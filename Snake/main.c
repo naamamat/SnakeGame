@@ -233,6 +233,7 @@ bool step(char** board, char direction, struct Snake* snake) {
 		lastTail->y = yLastTail;
 		lastTail->next = snake->tail;
 		snake->tail = lastTail;
+		setStar(board);
 
 		//snake->head->next = lastTail;
 		//snake->head = lastHead;
@@ -271,44 +272,77 @@ bool game() {
 	}
 	printf("\033[H\033[J");
 	printScreen(board);
+	printf("Are you ready?");
+	Sleep(1000);
+	printf("\033[H\033[J");
+	printScreen(board);
+	printf("3");
+	Sleep(1000);
+	printf("\033[H\033[J");
+	printScreen(board);
+	printf("2");
+	Sleep(1000);
+	printf("\033[H\033[J");
+	printScreen(board);
+	printf("1");
+	Sleep(1000);
+	printf("\033[H\033[J");
+
+	printScreen(board);
+	printf("Let's go!!!!\n");
+	Sleep(1000);
 	bool collision = false;
 	board[height / 2 + 2][width / 2] = '*';
 	char dir = 'D';
 	while (!collision && statusGame(snake, board)) {
-		printf("Last input: %c\n", dir);
-		Sleep(3000);
+		printf("Direction: %c\n", dir);
+		Sleep(300);
 
 		if (_kbhit()) {
+			char lastDir = dir;
 			dir = _getch();
-			dir = _getch();
-			//printf("_getch: c: %c d: %d\n", dir, dir);
+			//printf("d is - %d", dir);
+			if (dir == -32) {
+				dir = _getch();
+				//printf("_getch: c: %c d: %d\n", dir, dir);
 
-			switch (dir) {
-			case KEY_UP:
-				dir = 'U';
-				break;
-			case KEY_DOWN:
-				dir = 'D';
-				break;
-			case KEY_LEFT:
-				dir = 'L';
-				break;
-			case KEY_RIGHT:
-				dir = 'R';
-				break;
-			default:
-				break;
+				switch (dir) {
+				case KEY_UP:
+					dir = 'U';
+					break;
+				case KEY_DOWN:
+					dir = 'D';
+					break;
+				case KEY_LEFT:
+					dir = 'L';
+					break;
+				case KEY_RIGHT:
+					dir = 'R';
+					break;
+				default:
+					dir = lastDir;
+					break;
+				}
+			}
+			else if (dir == 27) {
+				// ESC key to exit
+				return 0;
+			}
+			else {
+				dir = lastDir;
 			}
 
+
 		}
-		setStar(board);
+		//setStar(board);
 
 		collision = step(board, dir, snake);
 		//isEat = false;
 		setSnakeOnBoard(snake, board);
 		printf("\033[H\033[J");
 		printScreen(board);
-		printf("%d\n", (statusGame(snake, board) & !collision));
+		char* st = (statusGame(snake, board) & !collision)? "" : "GameOver!";
+		printf("%s\n", st);
 	}
 }
 
