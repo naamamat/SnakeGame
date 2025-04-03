@@ -12,13 +12,16 @@
 #define KEY_DOWN 80
 #define KEY_LEFT 75
 #define KEY_RIGHT 77
+#define WAITING_GAME 300
+#define WAITING_OPENING 1000
+#define CLEAR "\033[H\033[J" // Clears the screen
+#define LEN_WIN width * 2
 
 unsigned int width = 0;
 unsigned int height = 0;
 
 
 struct Node {
-	//char* placeinBoard;
 	int x;
 	int y;
 	struct Node* next;
@@ -35,9 +38,6 @@ struct Snake {
 
 void printScreen(char **board)
 {
-	// Clears the screen
-	//printf("\033[H\033[J");
-
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			printf("%c", board[i][j]);
@@ -154,13 +154,11 @@ void setStar(char** board) {
 	while (realY < width - 2 && board[x][realY] != ' ') {
 		realY++;
 	}
-
 	if (realY > width - 2) {
 		printf("Error setting star");
 		return;
 	}
 
-	//printf("x = %d, y = %d, count av = %d\n", x, realY,countAvailable);
 
 	board[x][realY] = '*';
 }
@@ -191,7 +189,6 @@ bool step(char** board, char direction, struct Snake* snake) {
 	char prevHead = (snake->len == 1) ? ' ' : 'O';
 	board[snake->head->x][snake->head->y] = prevHead;
 	struct Node* prevTail = snake->tail;
-	//here
 
 	if (snake->tail->next != NULL) {
 		snake->tail = snake->tail->next;
@@ -199,15 +196,12 @@ bool step(char** board, char direction, struct Snake* snake) {
 	int xLastTail = prevTail->x;
 	int yLastTail = prevTail->y;
 
-
-
 	prevTail->next = NULL;
 	prevTail->x = snake->head->x;
 	prevTail->y = snake->head->y;
 
 	if (direction == 'D') {
 		prevTail->x += 1;
-		//snake->head->x 
 	}
 	else if (direction == 'U') {
 		prevTail->x -= 1;
@@ -229,16 +223,14 @@ bool step(char** board, char direction, struct Snake* snake) {
 	struct Node* lastTail = NULL;
 	if (isEat) {
 		lastTail = malloc(sizeof(Node));
-		lastTail->x = xLastTail;
-		lastTail->y = yLastTail;
-		lastTail->next = snake->tail;
+		if (lastTail != NULL) {
+			lastTail->x = xLastTail;
+			lastTail->y = yLastTail;
+			lastTail->next = snake->tail;
+		}
 		snake->tail = lastTail;
 		setStar(board);
-
-		//snake->head->next = lastTail;
-		//snake->head = lastHead;
 		snake->len += 1;
-
 	}
 
 	return isCol;
@@ -248,63 +240,63 @@ bool step(char** board, char direction, struct Snake* snake) {
 
 
 
-bool statusGame(struct Snake* snake, char** board) {
+bool borderCollision(struct Snake* snake, char** board) {
 	if (snake->head->x >= height - 1 || snake->head->x <= 0 || snake->head->y >= width - 1 || snake->head->y <= 0) {
 		return false;
 	}
 	return true;
 }
 
-
-
-
-bool game() {
-	char** board = initGame();
-	if (!board) {
-		printf("init game failed\n");
-		return -1;
-	}
-
-	struct Snake* snake = initSnake(board);
-	if (!snake) {
-		printf("init snake failed\n");
-		return -1;
-	}
-	printf("\033[H\033[J");
+void printOpening(char** board) {
+	printf(CLEAR);
 	printScreen(board);
 	printf("Are you ready?");
-	Sleep(1000);
-	printf("\033[H\033[J");
-	printScreen(board);
-	printf("3");
-	Sleep(1000);
-	printf("\033[H\033[J");
-	printScreen(board);
-	printf("2");
-	Sleep(1000);
-	printf("\033[H\033[J");
-	printScreen(board);
-	printf("1");
-	Sleep(1000);
-	printf("\033[H\033[J");
-
+	Sleep(WAITING_OPENING);
+	for (int i = 3; i >= 1; i--) {
+		printf(CLEAR);
+		printScreen(board);
+		printf("%d", i);
+		Sleep(WAITING_OPENING);
+	}
+	printf(CLEAR);
 	printScreen(board);
 	printf("Let's go!!!!\n");
-	Sleep(1000);
-	bool collision = false;
-	board[height / 2 + 2][width / 2] = '*';
+	Sleep(WAITING_OPENING);
+}
+
+void freeGame(char** board, struct Snake* snake) {
+	if (board != NULL) {
+		for (int i = 0; i < height; i++) {
+			free(board[i]);
+		}
+		free(board);
+	}
+
+
+	while (snake != NULL && snake->tail != NULL) {
+	struct Node* cur = snake->tail;
+		snake->tail = snake->tail->next;
+		free(cur);
+	}
+	free(snake);
+}
+
+
+void game(char** board, struct Snake* snake) {
+	printOpening(board);
+	setStar(board);
 	char dir = 'D';
-	while (!collision && statusGame(snake, board)) {
+	bool selfCollision = false;
+	bool win = false;
+	while (!win && !selfCollision && borderCollision(snake, board)) {
 		printf("Direction: %c\n", dir);
-		Sleep(300);
+		Sleep(WAITING_GAME);
 
 		if (_kbhit()) {
 			char lastDir = dir;
 			dir = _getch();
-			//printf("d is - %d", dir);
 			if (dir == -32) {
 				dir = _getch();
-				//printf("_getch: c: %c d: %d\n", dir, dir);
 
 				switch (dir) {
 				case KEY_UP:
@@ -324,55 +316,41 @@ bool game() {
 					break;
 				}
 			}
-			else if (dir == 27) {
-				// ESC key to exit
+			else if (dir == 27) { // ESC key
 				return 0;
 			}
 			else {
 				dir = lastDir;
 			}
-
-
 		}
-		//setStar(board);
-
-		collision = step(board, dir, snake);
-		//isEat = false;
+		selfCollision = step(board, dir, snake);
 		setSnakeOnBoard(snake, board);
-		printf("\033[H\033[J");
-		printScreen(board);
-		char* st = (statusGame(snake, board) & !collision)? "" : "GameOver!";
-		printf("%s\n", st);
+		printf(CLEAR);
+		printScreen(board);	
+		printf("%d/%d\n", snake->len, LEN_WIN);
+		if (snake->len >= LEN_WIN) {
+			win = true;
+		}
+
 	}
+	char* statusGame = (win)? "you win!" : "GameOver!";
+	printf("%s\n", statusGame);
+	return 0;
 }
 
-
-/*
-==============================================
- Name        : SwapValues
- Description : Swaps two integers using pointers
-==============================================
-*/
-#include <stdio.h>
-
-void swap(int* a, int* b) {
-	int temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
-
-int main()
-{
-
-	//int x = 5, y = 10;
-	//printf("Before swap: x = %d, y = %d\n", x, y);
-	//swap(&x, &y);
-	//printf("Before swap: x = %d, y = %d\n", x, y);
+int main() {
 	
-	game();
+	char** board = initGame();
+	struct Snake* snake = initSnake(board);
 
-
-
+	if (board != NULL && snake != NULL) {
+		game(board, snake);
+	}
+	else {
+		printf("init failed\n");
+		freeGame(board, snake);
+		return -1;
+	}
+	freeGame(board, snake);
 	return 0;
 }
