@@ -1,4 +1,4 @@
-#  Snake Game in C 🐍
+#  Snake Game 🐍
 
 This is a classic Snake game implemented in C.  
 The snake is represented using a **linked list**, allowing smooth movement and growth mechanics.
