@@ -8,6 +8,7 @@ The snake is represented using a **linked list**, allowing smooth movement and g
 - **Don't hit the walls** – stay inside the play area.
 - **Don't run into yourself** – avoid your own tail.
 - **Eat the stars (`*`)** to grow and increase your score.
+- **Use the arrow keys on your keyboard** to control the snake's direction.
 - The game gets harder as you progress!
 
 ## 📸 Screenshots
@@ -23,3 +24,12 @@ To compile the game, run:
 
 ```bash
 gcc snake.c -o snake
+```
+
+## ▶️ How to Run
+
+After compiling, run the game with:
+
+```bash
+./snake
+```
