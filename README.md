@@ -1,4 +1,4 @@
-# 🐍 Snake Game in C
+#  Snake Game in C 🐍
 
 This is a classic Snake game implemented in C.  
 The snake is represented using a **linked list**, allowing smooth movement and growth mechanics.
@@ -33,3 +33,5 @@ After compiling, run the game with:
 ```bash
 ./snake
 ```
+
+Enjoy! 
